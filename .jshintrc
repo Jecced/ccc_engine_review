@@ -4,7 +4,7 @@
   "bitwise": false,
   "camelcase": false,
   "curly": false,
-  "eqeqeq": true,
+  "eqeqeq": false,
   "immed": true,
   "indent": 4,
   "latedef": false,
@@ -12,7 +12,7 @@
   "noarg": true,
   "quotmark": "single",
   "undef": true,
-  "unused": true,
+  "unused": false,
   "strict": false,
   "predef": [
     "window",
