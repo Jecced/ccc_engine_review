@@ -23,6 +23,7 @@ export default class Assembler2D extends Assembler {
         data.createQuadData(0, this.verticesFloats, this.indicesCount);
     }
     initLocal () {
+        //sprite-simple 模式中, updateVerts 写入了 [l b r t] 数据
         this._local = [];
         this._local.length = 4;
     }
