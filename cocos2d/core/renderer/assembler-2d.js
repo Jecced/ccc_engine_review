@@ -1,7 +1,6 @@
 import Assembler from './assembler';
 import dynamicAtlasManager from './utils/dynamic-atlas/manager';
 import RenderData from './webgl/render-data';
-import { Color } from '../value-types';
 
 export default class Assembler2D extends Assembler {
     constructor () {
@@ -9,11 +8,12 @@ export default class Assembler2D extends Assembler {
 
         this._renderData = new RenderData();
         this._renderData.init(this);
-        
+
         this.initData();
         this.initLocal();
     }
 
+    // 计算总共需要的空间大小, 顶点数量 * 一个顶点所需的空间 xy两个,uv两个,color一个
     get verticesFloats () {
         return this.verticesCount * this.floatsPerVert;
     }
@@ -27,6 +27,7 @@ export default class Assembler2D extends Assembler {
         this._local.length = 4;
     }
 
+    // 更新顶点颜色
     updateColor (comp, color) {
         let uintVerts = this._renderData.uintVDatas[0];
         if (!uintVerts) return;
@@ -42,6 +43,7 @@ export default class Assembler2D extends Assembler {
         return cc.renderer._handle._meshBuffer;
     }
 
+    // 更新顶点坐标信息
     updateWorldVerts (comp) {
         let local = this._local;
         let verts = this._renderData.vDatas[0];
@@ -53,7 +55,7 @@ export default class Assembler2D extends Assembler {
 
         let vl = local[0], vr = local[2],
             vb = local[1], vt = local[3];
-        
+
         let floatsPerVert = this.floatsPerVert;
         let vertexOffset = 0;
         let justTranslate = a === 1 && b === 0 && c === 0 && d === 1;
@@ -76,9 +78,9 @@ export default class Assembler2D extends Assembler {
             verts[vertexOffset + 1] = vt + ty;
         } else {
             let al = a * vl, ar = a * vr,
-            bl = b * vl, br = b * vr,
-            cb = c * vb, ct = c * vt,
-            db = d * vb, dt = d * vt;
+                bl = b * vl, br = b * vr,
+                cb = c * vb, ct = c * vt,
+                db = d * vb, dt = d * vt;
 
             // left bottom
             verts[vertexOffset] = al + cb + tx;
@@ -97,7 +99,7 @@ export default class Assembler2D extends Assembler {
             verts[vertexOffset + 1] = br + dt + ty;
         }
     }
-
+    // 将renderdata中的数据填充到buffer中, 也计算填充了三角形顶点索引
     fillBuffers (comp, renderer) {
         if (renderer.worldMatDirty) {
             this.updateWorldVerts(comp);
@@ -133,7 +135,7 @@ export default class Assembler2D extends Assembler {
 
     packToDynamicAtlas (comp, frame) {
         if (CC_TEST) return;
-        
+
         if (!frame._original && dynamicAtlasManager && frame._texture.packable) {
             let packedFrame = dynamicAtlasManager.insertSpriteFrame(frame);
             if (packedFrame) {
@@ -142,7 +144,7 @@ export default class Assembler2D extends Assembler {
         }
         let material = comp._materials[0];
         if (!material) return;
-        
+
         if (material.getProperty('texture') !== frame._texture) {
             // texture was packed to dynamic atlas, should update uvs
             comp._vertsDirty = true;
@@ -152,13 +154,16 @@ export default class Assembler2D extends Assembler {
 }
 
 cc.js.addon(Assembler2D.prototype, {
-    floatsPerVert: 5,
+    floatsPerVert: 5,       // 一个顶点所需的空间 xy两个,uv两个,color一个
 
-    verticesCount: 4,
-    indicesCount: 6,
+    verticesCount: 4,       // 顶点个数
+    indicesCount: 6,        // 三角形顶点个数
 
-    uvOffset: 2,
-    colorOffset: 4,
+    uvOffset: 2,            // uv在buffer中的偏移量,
+    colorOffset: 4,         // color在buffer中的偏移量
+
+    // 格式如 x|y|u|v|color|x|y|u|v|color|x|y|u|v|color|......
+    // 当然也可以自定义格式
 });
 
 cc.Assembler2D = Assembler2D;
